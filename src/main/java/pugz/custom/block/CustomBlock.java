@@ -5,12 +5,16 @@ import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.item.FallingBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Direction;
 import net.minecraft.util.JSONUtils;
@@ -46,8 +50,6 @@ anvil recipes
 Item properties
 Item tooltip
 Item expire length
-enchantment_level_boost
-block break xp
 canSustainPlants
 transparent
 
@@ -62,7 +64,7 @@ default BlockStates
 
 public class CustomBlock extends Block {
     public final String registryName;
-    public final ItemGroup itemGroup;
+    public final Item.Properties itemProperties;
     public final FireInfo fireInfo;
     public final float compostChance;
     public final float stickiness;
@@ -74,16 +76,27 @@ public class CustomBlock extends Block {
     public final boolean placeableOnWater;
     public final float fallDamageFactor;
     public final boolean conduitBase;
-    public final boolean enchantmentBooster;
+    public final int enchantmentBonus;
+    public final boolean burning;
+    public final boolean climbable;
+    public final int exp;
+    public final boolean portalFrame;
+    public final PathNodeType pathNodeType;
+    public final boolean pistonSticky;
+    public final boolean extendCollisionVertically;
+    //public final int[] beaconColorMultiplier;
+    public final boolean transparent;
     public final List<Block> absorbableBlocks;
 
-    public CustomBlock(String registryName, AbstractBlock.Properties properties, ItemGroup group, FireInfo fireInfo,
+    public CustomBlock(String registryName, AbstractBlock.Properties properties, Item.Properties itemProperties, FireInfo fireInfo,
                        float compostChance, float stickiness, float bounciness, OffsetType offsetType, RenderType renderType,
                        boolean gravityAffected, int redstonePower, boolean placeableOnWater, float fallDamageFactor,
-                       boolean conduitBase, boolean enchantmentBooster, List<Block> absorbableBlocks) {
+                       boolean conduitBase, int enchantmentBonus, boolean burning, boolean climbable, int exp,
+                       boolean portalFrame, PathNodeType pathNodeType, boolean pistonSticky, boolean extendCollisionVertically,
+                       boolean transparent, List<Block> absorbableBlocks) {
         super(properties);
         this.registryName = registryName;
-        this.itemGroup = group;
+        this.itemProperties = itemProperties;
         this.fireInfo = fireInfo;
         this.compostChance = compostChance;
         this.stickiness = stickiness;
@@ -95,7 +108,15 @@ public class CustomBlock extends Block {
         this.placeableOnWater = placeableOnWater;
         this.fallDamageFactor = fallDamageFactor;
         this.conduitBase = conduitBase;
-        this.enchantmentBooster = enchantmentBooster;
+        this.enchantmentBonus = enchantmentBonus;
+        this.burning = burning;
+        this.climbable = climbable;
+        this.exp = exp;
+        this.portalFrame = portalFrame;
+        this.pathNodeType = pathNodeType;
+        this.pistonSticky = pistonSticky;
+        this.extendCollisionVertically = extendCollisionVertically;
+        this.transparent = transparent;
         this.absorbableBlocks = absorbableBlocks;
 
         FireBlock fire = (FireBlock) Blocks.FIRE;
@@ -108,6 +129,57 @@ public class CustomBlock extends Block {
     @Override
     public OffsetType getOffsetType() {
         return this.offsetType;
+    }
+
+    @Override
+    public boolean isBurning(BlockState state, IBlockReader world, BlockPos pos) {
+        return this.burning;
+    }
+
+    @Override
+    public boolean isLadder(BlockState state, IWorldReader world, BlockPos pos, LivingEntity entity) {
+        return this.climbable;
+    }
+
+    @Override
+    public boolean isPortalFrame(BlockState state, IBlockReader world, BlockPos pos) {
+        return this.portalFrame;
+    }
+
+    @Override
+    public int getExpDrop(BlockState state, IWorldReader world, BlockPos pos, int fortune, int silktouch) {
+        return this.exp;
+    }
+
+    @Override
+    public float getEnchantPowerBonus(BlockState state, IWorldReader world, BlockPos pos) {
+        return this.enchantmentBonus;
+    }
+
+    @Override
+    public float[] getBeaconColorMultiplier(BlockState state, IWorldReader world, BlockPos pos, BlockPos beaconPos) {
+        return null;
+    }
+
+    @Override
+    public PathNodeType getAiPathNodeType(BlockState state, IBlockReader world, BlockPos pos, MobEntity entity) {
+        return this.pathNodeType;
+    }
+
+    @Override
+    public boolean isStickyBlock(BlockState state) {
+        return this.pistonSticky;
+    }
+
+    @Override
+    public boolean collisionExtendsVertically(BlockState state, IBlockReader world, BlockPos pos, Entity collidingEntity) {
+        return this.extendCollisionVertically;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public boolean isTransparent(BlockState state) {
+        return this.transparent;
     }
 
     @Override
@@ -213,12 +285,6 @@ public class CustomBlock extends Block {
 
             String registryName = JSONUtils.getString(json, "registry_name");
 
-            String itemGroup = JSONUtils.getString(json, "item_group");
-            ItemGroup itemGroup1 = ItemGroup.SEARCH;
-            for (ItemGroup group : ItemGroup.GROUPS) {
-                if (itemGroup.equals(group.tabLabel)) itemGroup1 = group;
-            }
-
             Material material;
 
             if (JSONUtils.isString(json, "material")) {
@@ -260,6 +326,16 @@ public class CustomBlock extends Block {
                 if (customProperty.requiresTool) properties.setRequiresTool();
             }
 
+            Item.Properties itemProperties = new Item.Properties();
+            CustomItemProperty customItemProperty = JsonHelper.getItemProperties(JSONUtils.getJsonObject(json, "item_properties"));
+            itemProperties.group(customItemProperty.group);
+            itemProperties.defaultMaxDamage(customItemProperty.maxDamage);
+            itemProperties.maxStackSize(customItemProperty.maxStackSize);
+            itemProperties.rarity(customItemProperty.rarity);
+            itemProperties.food(customItemProperty.food);
+            if (customItemProperty.immuneToFire)  itemProperties.isImmuneToFire();
+            if (customItemProperty.noRepair) itemProperties.setNoRepair();
+
             FireInfo fireInfo = JsonHelper.getFireInfo(JSONUtils.getJsonObject(json, "fire_info"));
 
             float compostChance = JSONUtils.getFloat(json, "compost_chance");
@@ -272,7 +348,15 @@ public class CustomBlock extends Block {
             boolean placeableOnWater = JSONUtils.getBoolean(json, "placeable_on_water");
             float fallDamageFactor = JSONUtils.getFloat(json, "fall_damage_factor");
             boolean conduitBase = JSONUtils.getBoolean(json, "conduit_base");
-            boolean enchantmentBooster = JSONUtils.getBoolean(json, "enchantment_booster");
+            int enchantmentBonus = JSONUtils.getInt(json, "enchantment_bonus");
+            boolean burning = JSONUtils.getBoolean(json, "burning");
+            boolean climbable = JSONUtils.getBoolean(json, "climbable");
+            int exp = JSONUtils.getInt(json, "exp");
+            boolean portalFrame = JSONUtils.getBoolean(json, "portal_frame");
+            String pathNodeType = JSONUtils.getString(json, "path_node_type");
+            boolean pistonSticky = JSONUtils.getBoolean(json, "piston_sticky");
+            boolean extendCollisionVertically = JSONUtils.getBoolean(json, "extend_collision_vertically");
+            boolean transparent = JSONUtils.getBoolean(json, "transparent");
 
             List<Block> absorbableBlocks = new ArrayList<Block>();
             JsonArray absorbableBlocksArray = JSONUtils.getJsonArray(json, "absorbable_blocks");
@@ -280,7 +364,7 @@ public class CustomBlock extends Block {
                 absorbableBlocks.add(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(e.getAsString())));
             }
 
-            return new CustomBlock(registryName, properties, itemGroup1, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBooster, absorbableBlocks);
+            return new CustomBlock(registryName, properties, itemProperties, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBonus, burning, climbable, exp, portalFrame, StringToObject.pathNodeType(pathNodeType), pistonSticky, extendCollisionVertically, transparent, absorbableBlocks);
         }
 
         @Override
@@ -288,9 +372,9 @@ public class CustomBlock extends Block {
             JsonObject json = new JsonObject();
 
             json.add("registry_name", context.serialize(block.getRegistryName()));
-            json.add("item_group", context.serialize(block.itemGroup));
             json.add("material", context.serialize(block.material));
-            json.add("properties", context.serialize(block.material));
+            json.add("properties", context.serialize(block.properties));
+            json.add("item_properties", context.serialize(block.material));
 
             return json;
         }

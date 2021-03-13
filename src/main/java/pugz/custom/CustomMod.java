@@ -34,7 +34,7 @@ public class CustomMod {
         for (Block block : manager.registeredBlocks.values()) {
             CustomBlock custom = (CustomBlock) block;
             BLOCKS.register(custom.registryName, () -> custom);
-            ITEMS.register(custom.registryName, () -> new BlockItem(custom, new Item.Properties().group(custom.itemGroup)));
+            ITEMS.register(custom.registryName, () -> new BlockItem(custom, custom.itemProperties));
         }
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {

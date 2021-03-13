@@ -1,16 +1,16 @@
 package pugz.custom.util;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import net.minecraft.item.*;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.ToolType;
 import pugz.custom.block.CustomBlock;
+import pugz.custom.block.CustomItemProperty;
 import pugz.custom.block.CustomMaterial;
 import pugz.custom.block.CustomProperty;
 
 public class JsonHelper {
     public static CustomMaterial getMaterial(JsonObject json) {
-        String name = JSONUtils.getString(json, "name");
         String color = JSONUtils.getString(json, "color");
         String pushReaction = JSONUtils.getString(json, "push_reaction");
         boolean blocksMovement = JSONUtils.getBoolean(json, "blocks_movement");
@@ -20,15 +20,10 @@ public class JsonHelper {
         boolean replaceable = JSONUtils.getBoolean(json, "replaceable");
         boolean isSolid = JSONUtils.getBoolean(json, "solid");
 
-        CustomMaterial.registerMaterial(name, StringToObject.materialColor(color), isLiquid, isSolid, blocksMovement, isOpaque, flammable, replaceable, StringToObject.pushReaction(pushReaction));
-        CustomMaterial material = CustomMaterial.MATERIAL_REGISTRY.get(name);
-
-        if (material == null) throw new JsonSyntaxException("Unknown material '" + name + "'");
-        else return material;
+        return new CustomMaterial(StringToObject.materialColor(color), isLiquid, isSolid, blocksMovement, isOpaque, flammable, replaceable, StringToObject.pushReaction(pushReaction));
     }
 
     public static CustomProperty getProperty(JsonObject json) {
-        String name = JSONUtils.getString(json, "name");
         String soundType = JSONUtils.getString(json, "sound");
         int lightLevel = JSONUtils.getInt(json, "light");
         float hardness = JSONUtils.getFloat(json, "hardness");
@@ -46,11 +41,24 @@ public class JsonHelper {
         boolean emissiveRendering = JSONUtils.getBoolean(json, "emissive_rendering");
         boolean variableOpacity = JSONUtils.getBoolean(json, "variable_opacity");
 
-        CustomProperty.registerProperty(name, StringToObject.soundType(soundType), lightLevel, blastResistance, hardness, requiresTool, ticksRandomly, slipperiness, speedFactor, jumpFactor, isAir, harvestLevel, ToolType.get(harvestTool), allowSpawn, postProcessing, emissiveRendering, variableOpacity);
-        CustomProperty property = CustomProperty.PROPERTY_REGISTRY.get(name);
+        return new CustomProperty(StringToObject.soundType(soundType), lightLevel, blastResistance, hardness, requiresTool, ticksRandomly, slipperiness, speedFactor, jumpFactor, isAir, harvestLevel, ToolType.get(harvestTool), allowSpawn, postProcessing, emissiveRendering, variableOpacity);
+    }
 
-        if (property == null) throw new JsonSyntaxException("Unknown property '" + name + "'");
-        else return property;
+    public static CustomItemProperty getItemProperties(JsonObject json) {
+        String itemGroup = JSONUtils.getString(json, "item_group");
+        ItemGroup itemGroup1 = ItemGroup.SEARCH;
+        for (ItemGroup group : ItemGroup.GROUPS) {
+            if (itemGroup.equals(group.tabLabel)) itemGroup1 = group;
+        }
+
+        int maxStackSize = JSONUtils.getInt(json, "max_stack_size");
+        int defaultMaxDamage = JSONUtils.getInt(json, "max_damage");
+        Rarity rarity = StringToObject.rarity(JSONUtils.getString(json, "rarity"));
+        Food food = StringToObject.food(JSONUtils.getString(json, "food"));
+        boolean fireImmune = JSONUtils.getBoolean(json, "fire_immune");
+        boolean noRepair = JSONUtils.getBoolean(json, "no_repair");
+
+        return new CustomItemProperty(itemGroup1, maxStackSize, defaultMaxDamage, rarity, food, fireImmune, noRepair);
     }
 
     public static CustomBlock.FireInfo getFireInfo(JsonObject json) {

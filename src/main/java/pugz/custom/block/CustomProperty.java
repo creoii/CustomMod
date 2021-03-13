@@ -7,13 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.common.ToolType;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class CustomProperty {
-    public static final Map<String, CustomProperty> PROPERTY_REGISTRY = new HashMap<>();
-
-    public final String name;
     public final SoundType soundType;
     public final int lightLevel;
     public final float hardness;
@@ -31,11 +25,10 @@ public class CustomProperty {
     public final boolean emissiveRendering;
     public final boolean variableOpacity;
 
-    public CustomProperty(String name, SoundType soundType, int lightLevel, float hardness, float blastResistance,
+    public CustomProperty(SoundType soundType, int lightLevel, float hardness, float blastResistance,
                             boolean requiresTool, boolean ticksRandomly, float slipperiness, float speedFactor, float jumpFactor,
                             boolean isAir, int harvestLevel, ToolType harvestTool, boolean dontAllowSpawn,
                             boolean postProcessing, boolean emissiveRendering, boolean variableOpacity) {
-        this.name = name;
         this.soundType = soundType;
         this.lightLevel = lightLevel;
         this.hardness = hardness;
@@ -52,10 +45,6 @@ public class CustomProperty {
         this.postProcessing = postProcessing;
         this.emissiveRendering = emissiveRendering;
         this.variableOpacity = variableOpacity;
-    }
-
-    public static void registerProperty(String name, SoundType soundType, int lightLevel, float hardness, float blastResistance, boolean requiresTool, boolean ticksRandomly, float slipperiness, float speedFactor, float jumpFactor, boolean isAir, int harvestLevel, ToolType harvestTool, boolean dontAllowSpawn, boolean postProcessing, boolean emissiveRendering, boolean variableOpacity) {
-        PROPERTY_REGISTRY.put(name, new CustomProperty(name, soundType, lightLevel, hardness, blastResistance, requiresTool, ticksRandomly, slipperiness, speedFactor, jumpFactor, isAir, harvestLevel, harvestTool, dontAllowSpawn, postProcessing, emissiveRendering, variableOpacity));
     }
 
     public static boolean needsPostProcessing(BlockState state, IBlockReader reader, BlockPos pos) {
