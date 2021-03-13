@@ -1,2 +1,72 @@
 # CustomMod
  Create custom blocks through json files.
+
+# EXAMPLE json File:
+
+{
+  "registry_name": "test",
+  "material": {
+    "color": "adobe",
+    "push_reaction": "destroy",
+    "blocks_movement": false,
+    "flammable": true,
+    "liquid": false,
+    "opaque": false,
+    "replaceable": false,
+    "solid": false
+  },
+  "properties": {
+    "sound": "honey",
+    "light": 12,
+    "hardness": 1.0,
+    "blast_resistance": 1000.0,
+    "requires_tool_to_break": true,
+    "random_ticks": false,
+    "slipperiness": 1.0,
+    "speed_factor": 1.0,
+    "jump_factor": 1.0,
+    "air": false,
+    "harvest_level": 1,
+    "harvest_tool": "hoe",
+    "allow_spawn": true,
+    "post_processing": false,
+    "emissive_rendering": false,
+    "variable_opacity": false
+  },
+  "item_properties": {
+    "item_group": "tools",
+    "max_stack_size": 69,
+    "max_damage": 0,
+    "rarity": "common",
+    "food": "minecraft:apple",
+    "fire_immune": true,
+    "no_repair": false
+  },
+  "fire_info": {
+    "flammability": 0.5,
+    "encouragement": 0.5
+  },
+  "compost_chance": 0.5,
+  "stickiness": 1.5,
+  "bounciness": 1.5,
+  "offset_type": "none",
+  "render_type": "solid",
+  "gravity_affected": false,
+  "redstone_power": 10,
+  "placeable_on_water": false,
+  "fall_damage_factor": 0.5,
+  "conduit_base": true,
+  "enchantment_bonus": 1,
+  "burning": false,
+  "climbable": true,
+  "exp": 100,
+  "portal_frame": true,
+  "path_node_type": "danger_cactus",
+  "piston_sticky": true,
+  "extend_collision_vertically": true,
+  "transparent": false,
+  "absorbable_blocks": [
+    "minecraft:dirt",
+    "minecraft:grass_block"
+  ]
+}
