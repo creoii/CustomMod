@@ -29,9 +29,8 @@ public class CustomMod {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         BLOCKS.register(eventBus);
         ITEMS.register(eventBus);
-        BlockManager manager = new BlockManager();
 
-        for (Block block : manager.registeredBlocks.values()) {
+        for (Block block : BlockManager.BLOCK_REGISTRY.values()) {
             CustomBlock custom = (CustomBlock) block;
             BLOCKS.register(custom.registryName, () -> custom);
             ITEMS.register(custom.registryName, () -> new BlockItem(custom, custom.itemProperties));
@@ -43,7 +42,7 @@ public class CustomMod {
     }
 
     public void clientSetup(final FMLClientSetupEvent event) {
-        for (Block block : BlockManager.registeredBlocks.values()) {
+        for (Block block : BlockManager.BLOCK_REGISTRY.values()) {
             CustomBlock custom = (CustomBlock) block;
             if (custom.renderType != RenderType.getSolid()) RenderTypeLookup.setRenderLayer(custom, custom.renderType);
         }

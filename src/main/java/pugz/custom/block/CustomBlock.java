@@ -40,6 +40,7 @@ import java.util.*;
 TODO:
 //Fixes
 Fix absorbing
+Fix item group?
 
 //Nexts
 Villager Trades
@@ -47,7 +48,6 @@ Honey sliding
 Fuel
 brewing recipes
 anvil recipes
-Item properties
 Item tooltip
 Item expire length
 canSustainPlants
@@ -87,13 +87,14 @@ public class CustomBlock extends Block {
     //public final int[] beaconColorMultiplier;
     public final boolean transparent;
     public final List<Block> absorbableBlocks;
+    public final List<Block> validPlaceBlocks;
 
     public CustomBlock(String registryName, AbstractBlock.Properties properties, Item.Properties itemProperties, FireInfo fireInfo,
                        float compostChance, float stickiness, float bounciness, OffsetType offsetType, RenderType renderType,
                        boolean gravityAffected, int redstonePower, boolean placeableOnWater, float fallDamageFactor,
                        boolean conduitBase, int enchantmentBonus, boolean burning, boolean climbable, int exp,
                        boolean portalFrame, PathNodeType pathNodeType, boolean pistonSticky, boolean extendCollisionVertically,
-                       boolean transparent, List<Block> absorbableBlocks) {
+                       boolean transparent, List<Block> absorbableBlocks, List<Block> validPlaceBlocks) {
         super(properties);
         this.registryName = registryName;
         this.itemProperties = itemProperties;
@@ -118,6 +119,7 @@ public class CustomBlock extends Block {
         this.extendCollisionVertically = extendCollisionVertically;
         this.transparent = transparent;
         this.absorbableBlocks = absorbableBlocks;
+        this.validPlaceBlocks = validPlaceBlocks;
 
         FireBlock fire = (FireBlock) Blocks.FIRE;
         fire.setFireInfo(this, this.fireInfo.flammability, this.fireInfo.encouragement);
@@ -251,6 +253,8 @@ public class CustomBlock extends Block {
             FluidState fluidstate = worldIn.getFluidState(pos);
             FluidState fluidstate1 = worldIn.getFluidState(pos.up());
             return (fluidstate.getFluid() == Fluids.WATER || state.getMaterial() == Material.ICE) && fluidstate1.getFluid() == Fluids.EMPTY;
+        } else if (!this.validPlaceBlocks.isEmpty()) {
+            return this.validPlaceBlocks.contains(ForgeRegistries.BLOCKS.getValue(state.getBlock().getRegistryName()));
         } else return super.isValidPosition(state, worldIn, pos);
     }
 
@@ -364,7 +368,13 @@ public class CustomBlock extends Block {
                 absorbableBlocks.add(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(e.getAsString())));
             }
 
-            return new CustomBlock(registryName, properties, itemProperties, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBonus, burning, climbable, exp, portalFrame, StringToObject.pathNodeType(pathNodeType), pistonSticky, extendCollisionVertically, transparent, absorbableBlocks);
+            List<Block> validPlaceBlocks = new ArrayList<Block>();
+            JsonArray validPlaceBlocksArray = JSONUtils.getJsonArray(json, "valid_place_blocks");
+            for (JsonElement e : validPlaceBlocksArray) {
+                validPlaceBlocks.add(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(e.getAsString())));
+            }
+
+            return new CustomBlock(registryName, properties, itemProperties, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBonus, burning, climbable, exp, portalFrame, StringToObject.pathNodeType(pathNodeType), pistonSticky, extendCollisionVertically, transparent, absorbableBlocks, validPlaceBlocks);
         }
 
         @Override

@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class BlockManager {
     private static final Gson GSON_INSTANCE = getGsonBuilder().create();
-    public static Map<ResourceLocation, Block> registeredBlocks = ImmutableMap.of();
+    public static Map<ResourceLocation, Block> BLOCK_REGISTRY = ImmutableMap.of();
 
     public BlockManager() {
         File data = new File(CustomMod.DATA_PATH + "blocks/");
@@ -37,7 +37,7 @@ public class BlockManager {
             }
         }
 
-        registeredBlocks = builder.build();
+        BLOCK_REGISTRY = builder.build();
     }
 
     public static GsonBuilder getGsonBuilder() {
