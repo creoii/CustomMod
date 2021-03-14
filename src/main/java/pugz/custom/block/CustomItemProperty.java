@@ -5,6 +5,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Rarity;
 
 public class CustomItemProperty {
+
     public final ItemGroup group;
     public final int maxStackSize;
     public final int maxDamage;

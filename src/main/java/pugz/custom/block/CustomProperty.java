@@ -1,11 +1,14 @@
 package pugz.custom.block;
 
+import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.common.ToolType;
+
+import java.util.List;
 
 public class CustomProperty {
     public final SoundType soundType;

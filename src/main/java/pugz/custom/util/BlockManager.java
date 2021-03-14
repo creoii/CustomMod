@@ -15,11 +15,11 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 public class BlockManager {
-    private static final Gson GSON_INSTANCE = getGsonBuilder().create();
-    public static Map<ResourceLocation, Block> BLOCK_REGISTRY = ImmutableMap.of();
+    private static final Gson GSON_INSTANCE = getGsonBuilder().setPrettyPrinting().create();
+    public Map<ResourceLocation, Block> BLOCK_REGISTRY = ImmutableMap.of();
 
     public BlockManager() {
-        File data = new File(CustomMod.DATA_PATH + "blocks/");
+        File data = new File(CustomMod.DATA_PATH + "blocks");
         ImmutableMap.Builder<ResourceLocation, Block> builder = ImmutableMap.builder();
 
         if (!data.exists()) data.mkdirs();
@@ -30,6 +30,7 @@ public class BlockManager {
                 try {
                     Reader reader = Files.newBufferedReader(Paths.get(data + "/" + name));
                     CustomBlock block = GSON_INSTANCE.fromJson(reader, CustomBlock.class);
+                    block.registryName = name.replace( ".json", "");
                     builder.put(new ResourceLocation(CustomMod.MOD_ID, name.replace( ".json", "")), block);
                 } catch (Exception e) {
                     e.printStackTrace();

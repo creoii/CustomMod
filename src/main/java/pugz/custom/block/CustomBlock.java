@@ -12,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.tags.BlockTags;
@@ -40,7 +39,6 @@ import java.util.*;
 TODO:
 //Fixes
 Fix absorbing
-Fix item group?
 
 //Nexts
 Villager Trades
@@ -63,7 +61,7 @@ default BlockStates
  */
 
 public class CustomBlock extends Block {
-    public final String registryName;
+    public String registryName;
     public final Item.Properties itemProperties;
     public final FireInfo fireInfo;
     public final float compostChance;
@@ -89,14 +87,13 @@ public class CustomBlock extends Block {
     public final List<Block> absorbableBlocks;
     public final List<Block> validPlaceBlocks;
 
-    public CustomBlock(String registryName, AbstractBlock.Properties properties, Item.Properties itemProperties, FireInfo fireInfo,
+    public CustomBlock(AbstractBlock.Properties properties, Item.Properties itemProperties, FireInfo fireInfo,
                        float compostChance, float stickiness, float bounciness, OffsetType offsetType, RenderType renderType,
                        boolean gravityAffected, int redstonePower, boolean placeableOnWater, float fallDamageFactor,
                        boolean conduitBase, int enchantmentBonus, boolean burning, boolean climbable, int exp,
                        boolean portalFrame, PathNodeType pathNodeType, boolean pistonSticky, boolean extendCollisionVertically,
                        boolean transparent, List<Block> absorbableBlocks, List<Block> validPlaceBlocks) {
         super(properties);
-        this.registryName = registryName;
         this.itemProperties = itemProperties;
         this.fireInfo = fireInfo;
         this.compostChance = compostChance;
@@ -120,11 +117,6 @@ public class CustomBlock extends Block {
         this.transparent = transparent;
         this.absorbableBlocks = absorbableBlocks;
         this.validPlaceBlocks = validPlaceBlocks;
-
-        FireBlock fire = (FireBlock) Blocks.FIRE;
-        fire.setFireInfo(this, this.fireInfo.flammability, this.fireInfo.encouragement);
-
-        ComposterBlock.CHANCES.put(this.asItem(), this.compostChance);
     }
 
     @Nonnull
@@ -287,8 +279,6 @@ public class CustomBlock extends Block {
         public CustomBlock deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject json = JSONUtils.getJsonObject(element, "custom block");
 
-            String registryName = JSONUtils.getString(json, "registry_name");
-
             Material material;
 
             if (JSONUtils.isString(json, "material")) {
@@ -374,17 +364,17 @@ public class CustomBlock extends Block {
                 validPlaceBlocks.add(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(e.getAsString())));
             }
 
-            return new CustomBlock(registryName, properties, itemProperties, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBonus, burning, climbable, exp, portalFrame, StringToObject.pathNodeType(pathNodeType), pistonSticky, extendCollisionVertically, transparent, absorbableBlocks, validPlaceBlocks);
+            return new CustomBlock(properties, itemProperties, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBonus, burning, climbable, exp, portalFrame, StringToObject.pathNodeType(pathNodeType), pistonSticky, extendCollisionVertically, transparent, absorbableBlocks, validPlaceBlocks);
         }
 
         @Override
-        public JsonElement serialize(CustomBlock block, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(CustomBlock block, Type type, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
 
-            json.add("registry_name", context.serialize(block.getRegistryName()));
             json.add("material", context.serialize(block.material));
             json.add("properties", context.serialize(block.properties));
-            json.add("item_properties", context.serialize(block.material));
+            json.add("item_properties", context.serialize(block.itemProperties));
+            json.add("fire_info", context.serialize(block.fireInfo));
 
             return json;
         }

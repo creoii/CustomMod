@@ -63,7 +63,7 @@ public class JsonHelper {
 
     public static CustomBlock.FireInfo getFireInfo(JsonObject json) {
         int flammability = JSONUtils.getInt(json, "flammability");
-        int encouragement = JSONUtils.getInt(json, "flammability");
+        int encouragement = JSONUtils.getInt(json, "encouragement");
         return new CustomBlock.FireInfo(flammability, encouragement);
     }
 }

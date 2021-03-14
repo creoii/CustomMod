@@ -1,5 +1,4 @@
 {
-  "registry_name": "test",
   "material": {
     "color": "adobe",
     "push_reaction": "destroy",
@@ -63,5 +62,7 @@
   "absorbable_blocks": [
     "minecraft:dirt",
     "minecraft:grass_block"
+  ],
+  "valid_place_blocks": [
   ]
 }
