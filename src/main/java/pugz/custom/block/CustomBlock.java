@@ -1,5 +1,6 @@
 package pugz.custom.block;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.*;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
@@ -42,14 +43,12 @@ Fix absorbing
 
 //Nexts
 Villager Trades
-Honey sliding
 Fuel
 brewing recipes
 anvil recipes
 Item tooltip
 Item expire length
 canSustainPlants
-transparent
 
 //mixins
 hopper_immune (item cannot go in hoppers)
@@ -84,15 +83,22 @@ public class CustomBlock extends Block {
     public final boolean extendCollisionVertically;
     //public final int[] beaconColorMultiplier;
     public final boolean transparent;
+    public final boolean stickySliding;
+    public final int fuelBurnTime;
+    public final boolean enchantedGlint;
     public final List<Block> absorbableBlocks;
     public final List<Block> validPlaceBlocks;
+    public List<CustomVillagerTrade> villagerTrades;
+    public List<CustomVillagerTrade> merchantTrades;
+    public List<CustomVillagerTrade> rareMerchantTrades;
 
     public CustomBlock(AbstractBlock.Properties properties, Item.Properties itemProperties, FireInfo fireInfo,
                        float compostChance, float stickiness, float bounciness, OffsetType offsetType, RenderType renderType,
                        boolean gravityAffected, int redstonePower, boolean placeableOnWater, float fallDamageFactor,
                        boolean conduitBase, int enchantmentBonus, boolean burning, boolean climbable, int exp,
                        boolean portalFrame, PathNodeType pathNodeType, boolean pistonSticky, boolean extendCollisionVertically,
-                       boolean transparent, List<Block> absorbableBlocks, List<Block> validPlaceBlocks) {
+                       boolean transparent, boolean stickySliding, int fuelBurnTime, boolean enchantedGlint,
+                       List<Block> absorbableBlocks, List<Block> validPlaceBlocks) {
         super(properties);
         this.itemProperties = itemProperties;
         this.fireInfo = fireInfo;
@@ -115,8 +121,13 @@ public class CustomBlock extends Block {
         this.pistonSticky = pistonSticky;
         this.extendCollisionVertically = extendCollisionVertically;
         this.transparent = transparent;
+        this.stickySliding = stickySliding;
+        this.fuelBurnTime = fuelBurnTime;
+        this.enchantedGlint = enchantedGlint;
         this.absorbableBlocks = absorbableBlocks;
         this.validPlaceBlocks = validPlaceBlocks;
+        //this.villagerTrades = villagerTrades;
+        //this.merchantTrades = merchantTrades;
     }
 
     @Nonnull
@@ -269,6 +280,18 @@ public class CustomBlock extends Block {
         super.onEntityWalk(worldIn, pos, entityIn);
     }
 
+    @SuppressWarnings("deprecation")
+    public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn) {
+        if (this.stickySliding) {
+            if (BlockUtils.isSliding(pos, entityIn)) {
+                BlockUtils.triggerSlideDownBlock(entityIn, pos);
+                BlockUtils.setSlideVelocity(entityIn);
+            }
+        }
+
+        super.onEntityCollision(state, worldIn, pos, entityIn);
+    }
+
     @Override
     public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
         return new ItemStack(this.asItem());
@@ -351,20 +374,33 @@ public class CustomBlock extends Block {
             boolean pistonSticky = JSONUtils.getBoolean(json, "piston_sticky");
             boolean extendCollisionVertically = JSONUtils.getBoolean(json, "extend_collision_vertically");
             boolean transparent = JSONUtils.getBoolean(json, "transparent");
+            boolean stickySliding = JSONUtils.getBoolean(json, "sticky_sliding");
+            int fuelBurnTime = JSONUtils.getInt(json, "fuel_burn_time");
+            boolean enchantedGlint = JSONUtils.getBoolean(json, "enchanted_glint");
 
             List<Block> absorbableBlocks = new ArrayList<Block>();
-            JsonArray absorbableBlocksArray = JSONUtils.getJsonArray(json, "absorbable_blocks");
-            for (JsonElement e : absorbableBlocksArray) {
+            for (JsonElement e : JSONUtils.getJsonArray(json, "absorbable_blocks")) {
                 absorbableBlocks.add(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(e.getAsString())));
             }
 
             List<Block> validPlaceBlocks = new ArrayList<Block>();
-            JsonArray validPlaceBlocksArray = JSONUtils.getJsonArray(json, "valid_place_blocks");
-            for (JsonElement e : validPlaceBlocksArray) {
+            for (JsonElement e : JSONUtils.getJsonArray(json, "valid_place_blocks")) {
                 validPlaceBlocks.add(ForgeRegistries.BLOCKS.getValue(new ResourceLocation(e.getAsString())));
             }
 
-            return new CustomBlock(properties, itemProperties, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBonus, burning, climbable, exp, portalFrame, StringToObject.pathNodeType(pathNodeType), pistonSticky, extendCollisionVertically, transparent, absorbableBlocks, validPlaceBlocks);
+            //List<CustomVillagerTrade> villagerTrades = new ArrayList<CustomVillagerTrade>();
+            //JsonArray villagerTradesArray = JSONUtils.getJsonArray(json, "villager_trades");
+            //for (JsonElement e : villagerTradesArray) {
+            //    villagerTrades.add(JsonHelper.getVillagerTrade(e));
+            //}
+
+            //List<CustomVillagerTrade> merchantTrades = new ArrayList<CustomVillagerTrade>();
+            //JsonArray merchantTradesArray = JSONUtils.getJsonArray(json, "merchant_trades");
+            //for (JsonElement e : merchantTradesArray) {
+            //    merchantTrades.add(JsonHelper.getVillagerTrade(e));
+            //}
+
+            return new CustomBlock(properties, itemProperties, fireInfo, compostChance, stickiness, bounciness, StringToObject.offsetType(offsetType), StringToObject.renderType(renderType), gravityAffected, redstonePower, placeableOnWater, fallDamageFactor, conduitBase, enchantmentBonus, burning, climbable, exp, portalFrame, StringToObject.pathNodeType(pathNodeType), pistonSticky, extendCollisionVertically, transparent, stickySliding, fuelBurnTime, enchantedGlint, absorbableBlocks, validPlaceBlocks);
         }
 
         @Override

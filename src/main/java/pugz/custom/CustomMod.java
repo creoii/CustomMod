@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -28,17 +29,27 @@ public class CustomMod {
     public static final String DATA_PATH = "./data/Custom/";
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
-    private static final BlockManager manager = new BlockManager();
+    public static final BlockManager blockManager = new BlockManager();
 
     public CustomMod() {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         BLOCKS.register(eventBus);
         ITEMS.register(eventBus);
 
-        for (Block block : manager.BLOCK_REGISTRY.values()) {
+        for (Block block : blockManager.BLOCK_REGISTRY.values()) {
             CustomBlock custom = (CustomBlock) block;
             BLOCKS.register(custom.registryName, () -> custom);
-            ITEMS.register(custom.registryName, () -> new BlockItem(custom, custom.itemProperties));
+            ITEMS.register(custom.registryName, () -> new BlockItem(custom, custom.itemProperties) {
+                @Override
+                public int getBurnTime(ItemStack itemStack) {
+                    return custom.fuelBurnTime;
+                }
+
+                @Override
+                public boolean hasEffect(ItemStack stack) {
+                    return custom.enchantedGlint;
+                }
+            });
         }
 
         eventBus.addListener(EventPriority.NORMAL, this::commonSetup);
@@ -49,7 +60,7 @@ public class CustomMod {
 
     public void commonSetup(final FMLCommonSetupEvent event) {
         FireBlock fire = (FireBlock) Blocks.FIRE;
-        for (Block block : manager.BLOCK_REGISTRY.values()) {
+        for (Block block : blockManager.BLOCK_REGISTRY.values()) {
             CustomBlock custom = (CustomBlock) block;
 
             fire.setFireInfo(custom, custom.fireInfo.flammability, custom.fireInfo.encouragement);
@@ -58,7 +69,7 @@ public class CustomMod {
     }
 
     public void clientSetup(final FMLClientSetupEvent event) {
-        for (Block block : manager.BLOCK_REGISTRY.values()) {
+        for (Block block : blockManager.BLOCK_REGISTRY.values()) {
             CustomBlock custom = (CustomBlock) block;
             if (custom.renderType != RenderType.getSolid()) RenderTypeLookup.setRenderLayer(custom, custom.renderType);
         }

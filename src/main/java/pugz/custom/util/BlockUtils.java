@@ -1,10 +1,12 @@
 package pugz.custom.util;
 
 import com.google.common.collect.Lists;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
@@ -65,5 +67,36 @@ public class BlockUtils {
 
             if (i > 64) break;
         }
+    }
+
+    public static boolean isSliding(BlockPos pos, Entity entity) {
+        if (entity.isOnGround()) {
+            return false;
+        } else if (entity.getPosY() > (double)pos.getY() + 0.9375D - 1.0E-7D) {
+            return false;
+        } else if (entity.getMotion().y >= -0.08D) {
+            return false;
+        } else {
+            double d0 = Math.abs((double)pos.getX() + 0.5D - entity.getPosX());
+            double d1 = Math.abs((double)pos.getZ() + 0.5D - entity.getPosZ());
+            double d2 = 0.4375D + (double)(entity.getWidth() / 2.0F);
+            return d0 + 1.0E-7D > d2 || d1 + 1.0E-7D > d2;
+        }
+    }
+
+    public static void triggerSlideDownBlock(Entity entity, BlockPos pos) {
+        if (entity instanceof ServerPlayerEntity && entity.world.getGameTime() % 20L == 0L) {
+            CriteriaTriggers.SLIDE_DOWN_BLOCK.test((ServerPlayerEntity)entity, entity.world.getBlockState(pos));
+        }
+    }
+
+    public static void setSlideVelocity(Entity entity) {
+        Vector3d vector3d = entity.getMotion();
+        if (vector3d.y < -0.13D) {
+            double d0 = -0.05D / vector3d.y;
+            entity.setMotion(new Vector3d(vector3d.x * d0, -0.05D, vector3d.z * d0));
+        } else entity.setMotion(new Vector3d(vector3d.x, -0.05D, vector3d.z));
+
+        entity.fallDistance = 0.0F;
     }
 }

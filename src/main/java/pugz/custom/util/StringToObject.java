@@ -6,6 +6,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.item.Food;
 import net.minecraft.item.Foods;
 import net.minecraft.item.Rarity;
@@ -81,6 +82,13 @@ public class StringToObject {
         switch (str) {
             default:
                 return Rarity.COMMON;
+        }
+    }
+
+    public static VillagerProfession profession(String str) {
+        switch (str) {
+            default:
+                return VillagerProfession.NONE;
         }
     }
 }

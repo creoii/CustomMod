@@ -1,13 +1,13 @@
 package pugz.custom.util;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.item.*;
 import net.minecraft.util.JSONUtils;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ToolType;
-import pugz.custom.block.CustomBlock;
-import pugz.custom.block.CustomItemProperty;
-import pugz.custom.block.CustomMaterial;
-import pugz.custom.block.CustomProperty;
+import net.minecraftforge.registries.ForgeRegistries;
+import pugz.custom.block.*;
 
 public class JsonHelper {
     public static CustomMaterial getMaterial(JsonObject json) {
@@ -65,5 +65,16 @@ public class JsonHelper {
         int flammability = JSONUtils.getInt(json, "flammability");
         int encouragement = JSONUtils.getInt(json, "encouragement");
         return new CustomBlock.FireInfo(flammability, encouragement);
+    }
+
+    public static CustomVillagerTrade getVillagerTrade(JsonElement json) {
+        String profession = JSONUtils.getString(json, "profession");
+        int emeraldCount = JSONUtils.getInt(json, "emerald_count");
+        Item sellingItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(JSONUtils.getString(json, "selling_item")));
+        int sellingItemCount = JSONUtils.getInt(json, "selling_item_count");
+        int maxUses = JSONUtils.getInt(json, "max_uses");
+        int xpValue = JSONUtils.getInt(json, "xp_value");
+        float priceMultiplier = JSONUtils.getFloat(json, "price_multiplier");
+        return new CustomVillagerTrade(StringToObject.profession(profession), emeraldCount, sellingItem, sellingItemCount, maxUses, xpValue, priceMultiplier);
     }
 }

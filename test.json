@@ -59,6 +59,9 @@
   "piston_sticky": true,
   "extend_collision_vertically": true,
   "transparent": false,
+  "sticky_sliding": true,
+  "fuel_burn_time": 20,
+  "enchanted_glint": true,
   "absorbable_blocks": [
     "minecraft:dirt",
     "minecraft:grass_block"
